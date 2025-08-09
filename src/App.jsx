@@ -1,26 +1,88 @@
-import React from "react";
-import { NextUIProvider } from "@nextui-org/react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import injectContext from "../src/store/appContext.jsx";
+import { useState, useEffect } from "react";
+import { db } from "../src/database/db";
+import dayjs from "dayjs";
+import { Home } from "lucide-react";
+import FormularioPendiente from "../src/componentes/FormularioPendientes";
+import ListaPendientes from "../src/componentes/ListaPendientes";
 
-import Home from "./pages/home.jsx";
-import Navbar from "./components/navbar.jsx";
+export default function App() {
+  const [mesActual, setMesActual] = useState(dayjs().format("YYYY-MM")); // e.g. "2025-08"
+  const [listaMes, setListaMes] = useState(null); // { id, mes, pendientes }
 
-function App({ Component, pageProps }) {
+  useEffect(() => {
+    cargarListaMes(mesActual);
+  }, [mesActual]);
+
+  const cargarListaMes = async (mes) => {
+    let lista = await db.listasMensuales.where("mes").equals(mes).first();
+    if (!lista) {
+      const id = await db.listasMensuales.add({ mes, pendientes: [] });
+      lista = await db.listasMensuales.get(id);
+    }
+    setListaMes(lista);
+  };
+
+  const guardarLista = async (nuevaLista) => {
+    await db.listasMensuales.put(nuevaLista);
+    setListaMes(nuevaLista);
+  };
+
+  const cambiarMes = (e) => {
+    setMesActual(e.target.value);
+  };
+
+  if (!listaMes) return <p>Cargando...</p>;
+
   return (
-    <NextUIProvider>
-      <NextThemesProvider attribute="class" defaultTheme="dark">
-        <BrowserRouter {...pageProps}>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route element={<h1>Not found!</h1>} />
-          </Routes>
-        </BrowserRouter>
-      </NextThemesProvider>
-    </NextUIProvider>
+    <div className="max-w-2xl mx-auto p-4">
+      <h1 className="text-3xl font-bold text-center mb-6 text-emerald-600">
+        📋 Pendientes
+      </h1>
+
+      <div className="flex items-center justify-center mb-6 text-center">
+        <input
+          type="month"
+          value={mesActual}
+          onChange={cambiarMes}
+          className="ms-auto border p-2 rounded"
+        />
+        <button
+          onClick={() => setMesActual(dayjs().format("YYYY-MM"))}
+          className="me-auto ml-2 px-2 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded shadow"
+        >
+          <Home className="w-6 h-6" />
+        </button>
+      </div>
+
+      <FormularioPendiente
+        onAgregar={async (nuevoPendiente) => {
+          const nuevaLista = {
+            ...listaMes,
+            pendientes: [...listaMes.pendientes, nuevoPendiente],
+          };
+          await guardarLista(nuevaLista);
+        }}
+      />
+
+      <ListaPendientes
+        pendientes={listaMes.pendientes}
+        onTogglePagado={async (id) => {
+          const nuevaLista = {
+            ...listaMes,
+            pendientes: listaMes.pendientes.map((p) =>
+              p.id === id ? { ...p, pagado: !p.pagado } : p
+            ),
+          };
+          await guardarLista(nuevaLista);
+        }}
+        onBorrar={async (id) => {
+          const nuevaLista = {
+            ...listaMes,
+            pendientes: listaMes.pendientes.filter((p) => p.id !== id),
+          };
+          await guardarLista(nuevaLista);
+        }}
+      />
+    </div>
   );
 }
-
-export default injectContext(App);
