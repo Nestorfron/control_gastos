@@ -42,6 +42,12 @@ tokens_lock = Lock()
 usuarios_pagos = {}
 pagos_lock = Lock()
 
+
+@app.route('/', methods=['GET'])   
+def index():
+    app.logger.info("Petición GET / recibida")
+    return "Backend activo", 200
+
 @app.route('/register-token', methods=['POST'])
 def register_token():
     data = request.json
