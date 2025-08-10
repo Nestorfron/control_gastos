@@ -42,7 +42,6 @@ tokens_lock = Lock()
 usuarios_pagos = {}
 pagos_lock = Lock()
 
-
 @app.route('/', methods=['GET'])   
 def index():
     app.logger.info("Petición GET / recibida")
@@ -51,6 +50,7 @@ def index():
 @app.route('/register-token', methods=['POST'])
 def register_token():
     data = request.json
+    app.logger.info(f"register_token payload: {data}")
     token = data.get('token')
     if not token:
         app.logger.warning("Intento de registro sin token")
@@ -58,12 +58,13 @@ def register_token():
 
     with tokens_lock:
         tokens.add(token)
-    app.logger.info(f"Token registrado: {token}")
+    app.logger.info(f"Token registrado: {token} - Total tokens guardados: {len(tokens)}")
     return jsonify({"message": "Token registrado correctamente"}), 200
 
 @app.route('/sync-pagos', methods=['POST'])
 def sync_pagos():
     data = request.json
+    app.logger.info(f"sync_pagos payload: {data}")
     token = data.get("token")
     pagos = data.get("pagos")
 
@@ -79,6 +80,7 @@ def sync_pagos():
 @app.route('/test-notification', methods=['POST'])
 def test_notification():
     data = request.json
+    app.logger.info(f"test_notification payload: {data}")
     token = data.get('token')
     if not token:
         app.logger.error("No se recibió token en /test-notification")
@@ -105,7 +107,7 @@ def enviar_notificacion(token, titulo, cuerpo):
         app.logger.info(f"✅ Notificación enviada a token: {token} | Título: {titulo} | Response: {response}")
         return True
     except Exception as e:
-        app.logger.error(f"❌ Error enviando notificación a {token}: {e}")
+        app.logger.error(f"❌ Error enviando notificación a {token}: {e}", exc_info=True)
         return False
 
 def revisar_y_notificar():
@@ -134,7 +136,7 @@ def revisar_y_notificar():
                         proximos.append(pago)
 
                 except Exception as e:
-                    app.logger.error(f"⚠️ Error procesando pago {pago}: {e}")
+                    app.logger.error(f"⚠️ Error procesando pago {pago}: {e}", exc_info=True)
 
             if vencidos:
                 conceptos = ", ".join([f"'{p['concepto']}'" for p in vencidos])
@@ -178,4 +180,4 @@ scheduler.add_job(revisar_y_notificar, "interval", minutes=1)
 scheduler.start()
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
