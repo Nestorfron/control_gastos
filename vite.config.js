@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate", // actualiza automáticamente el SW
+      registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt", "icons/*.png"],
       manifest: {
         name: "Control de Gastos",
@@ -19,7 +19,12 @@ export default defineConfig({
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
           { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-          { src: "/icons/maskable-icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+          {
+            src: "/icons/maskable-icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable"
+          }
         ]
       },
       workbox: {
@@ -37,5 +42,13 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  define: {
+    "__FIREBASE_API_KEY__": JSON.stringify(process.env.VITE_FIREBASE_API_KEY),
+    "__FIREBASE_AUTH_DOMAIN__": JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN),
+    "__FIREBASE_PROJECT_ID__": JSON.stringify(process.env.VITE_FIREBASE_PROJECT_ID),
+    "__FIREBASE_STORAGE_BUCKET__": JSON.stringify(process.env.VITE_FIREBASE_STORAGE_BUCKET),
+    "__FIREBASE_MESSAGING_SENDER_ID__": JSON.stringify(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+    "__FIREBASE_APP_ID__": JSON.stringify(process.env.VITE_FIREBASE_APP_ID)
+  }
 });
