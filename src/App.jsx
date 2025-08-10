@@ -14,10 +14,13 @@ export default function App() {
   const [listaMes, setListaMes] = useState(null);
   const [copiando, setCopiando] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [pendienteEditar, setPendienteEditar] = useState(null); // Solo para edición tradicional (puede quedar null)
+  const [pendienteEditar, setPendienteEditar] = useState(null); 
+
+  const pendientesLista = [];
 
   useEffect(() => {
     cargarListaMes(mesActual);
+
   }, [mesActual]);
 
   const cargarListaMes = async (mes) => {
@@ -38,13 +41,13 @@ export default function App() {
     setMesActual(e.target.value);
   };
 
-  // Cancelar edición tradicional (formulario)
+  
   const cancelarEdicion = () => {
     setPendienteEditar(null);
     setMostrarFormulario(false);
   };
 
-  // Guardar pendiente nuevo desde formulario tradicional
+  
   const guardarPendienteNuevo = async (pendiente) => {
     const nuevaLista = {
       ...listaMes,
@@ -61,7 +64,7 @@ export default function App() {
     setMostrarFormulario(false);
   };
 
-  // Guardar pendiente editado inline
+  
   const guardarPendienteInline = async (id, datosPendiente) => {
     const nuevaLista = {
       ...listaMes,
@@ -72,7 +75,7 @@ export default function App() {
     await guardarLista(nuevaLista);
   };
 
-  // Exportar JSON individual (mes actual)
+  
   const exportarJSON = () => {
     if (!listaMes) return;
     const data = JSON.stringify(listaMes, null, 2);
@@ -85,7 +88,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  // Importar JSON individual (mes actual)
+  
   const importarJSON = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -107,7 +110,7 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  // Exportar respaldo total
+  
   const exportarTodo = async () => {
     const todasLasListas = await db.listasMensuales.toArray();
     const data = JSON.stringify(todasLasListas, null, 2);
@@ -120,7 +123,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  // Importar respaldo total
+  
   const importarTodo = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -143,7 +146,7 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  // Copiar pendientes de mesActual a mesDestino
+  
   const copiarPendientes = async () => {
     if (mesDestino === mesActual) {
       alert("El mes destino debe ser diferente al mes actual");
@@ -223,6 +226,7 @@ export default function App() {
   };
 
   if (!listaMes) return <p>Cargando...</p>;
+  
 
   const totalPendientes = listaMes.pendientes.length;
   const pagados = listaMes.pendientes.filter((p) => p.pagado).length;
@@ -309,10 +313,10 @@ export default function App() {
             pendientes: listaMes.pendientes.filter((p) => p.id !== id),
           };
           await guardarLista(nuevaLista);
-          // Si estuviera editando con el formulario tradicional y borra el pendiente, cancelar edición
+          
           if (pendienteEditar?.id === id) cancelarEdicion();
         }}
-        onEditar={guardarPendienteInline} // edición inline aquí, recibe (id, datosEditados)
+        onEditar={guardarPendienteInline} 
       />
       <footer>
         <p className="text-center text-gray-500 mt-2">Creado por <a href="https://www.linkedin.com/in/nestor-frones/" target="_blank" rel="noreferrer">Nestor FRONES 👋</a></p>
