@@ -147,7 +147,7 @@ def revisar_y_notificar():
                 app.logger.info(f"Token inválido eliminado: {t}")
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(revisar_y_notificar, "interval", minutes=720)  # cada 12 horas
+scheduler.add_job(revisar_y_notificar, "interval", minutes=1)  # cada 12 horas
 scheduler.start()
 
 if __name__ == '__main__':

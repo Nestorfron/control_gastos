@@ -23,7 +23,7 @@ const updateSW = registerSW({
 
 async function sendTokenToBackend(token) {
   try {
-    const res = await fetch("http://localhost:5000/register-token", {
+    const res = await fetch(API_URL + "/register-token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
