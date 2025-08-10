@@ -95,15 +95,15 @@ def enviar_notificacion(token, titulo, cuerpo):
         token=token,
     )
     try:
-        messaging.send(message)
-        app.logger.info(f"Notificación enviada a token: {token} | Título: {titulo}")
+        response = messaging.send(message)
+        app.logger.info(f"✅ Notificación enviada a token: {token} | Título: {titulo} | Response: {response}")
         return True
     except Exception as e:
-        app.logger.error(f"Error enviando a {token}: {e}")
+        app.logger.error(f"❌ Error enviando notificación a {token}: {e}")
         return False
 
 def revisar_y_notificar():
-    app.logger.info("Ejecutando tarea periódica de revisión de pagos...")
+    app.logger.info("⏰ Ejecutando tarea periódica de revisión de pagos...")
     ahora = datetime.now()
     rango_fin = ahora + timedelta(days=30)
     inicio_mes_anterior = (ahora.replace(day=1) - timedelta(days=1)).replace(day=1)
@@ -111,7 +111,7 @@ def revisar_y_notificar():
 
     with pagos_lock:
         for token, pagos in usuarios_pagos.items():
-            app.logger.info(f"Revisando pagos para token: {token}, cantidad pagos: {len(pagos)}")
+            app.logger.info(f"🔍 Revisando pagos para token: {token} - total pagos: {len(pagos)}")
             vencidos = []
             proximos = []
 
@@ -128,13 +128,13 @@ def revisar_y_notificar():
                         proximos.append(pago)
 
                 except Exception as e:
-                    app.logger.error(f"Error procesando pago {pago}: {e}")
+                    app.logger.error(f"⚠️ Error procesando pago {pago}: {e}")
 
             if vencidos:
                 conceptos = ", ".join([f"'{p['concepto']}'" for p in vencidos])
                 titulo = "Pagos vencidos"
                 cuerpo = f"Tienes pagos vencidos: {conceptos}."
-                app.logger.info(f"Pagos vencidos para token {token}: {conceptos}")
+                app.logger.info(f"❌ Pagos vencidos para token {token}: {conceptos}")
                 if not enviar_notificacion(token, titulo, cuerpo):
                     tokens_a_borrar.add(token)
 
@@ -146,9 +146,11 @@ def revisar_y_notificar():
                 ])
                 titulo = "Pagos próximos a vencer"
                 cuerpo = f"Tienes pagos próximos a vencer: {conceptos}."
-                app.logger.info(f"Pagos próximos para token {token}: {conceptos}")
+                app.logger.info(f"⚠️ Pagos próximos para token {token}: {conceptos}")
                 if not enviar_notificacion(token, titulo, cuerpo):
                     tokens_a_borrar.add(token)
+
+            app.logger.info(f"✅ Revisión terminada para token: {token}")
 
     for token in tokens_a_borrar:
         usuarios_pagos.pop(token, None)
@@ -158,7 +160,12 @@ def revisar_y_notificar():
             for t in tokens_a_borrar:
                 tokens.discard(t)
                 usuarios_pagos.pop(t, None)
-                app.logger.info(f"Token inválido eliminado: {t}")
+                app.logger.info(f"🗑 Token inválido eliminado: {t}")
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"💥 Error inesperado: {e}", exc_info=True)
+    return jsonify({"error": "Error interno del servidor"}), 500
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(revisar_y_notificar, "interval", minutes=1) 
