@@ -12,9 +12,12 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 CORS(app)
 
-load_dotenv()
+# Carga .env solo en desarrollo
+if os.getenv("FLASK_ENV") != "production":
+    load_dotenv()
 
-firebase_key_str = os.getenv("VITE_FIREBASE_KEY")
+# Leer la clave Firebase desde variable de entorno
+firebase_key_str = os.getenv("FIREBASE_KEY")
 if not firebase_key_str:
     raise RuntimeError("❌ Variable de entorno FIREBASE_KEY no encontrada")
 
@@ -23,7 +26,7 @@ try:
 except json.JSONDecodeError as e:
     raise RuntimeError(f"❌ Error al parsear FIREBASE_KEY: {e}")
 
-# Inicializar Firebase con el dict en memoria
+# Inicializar Firebase
 cred = credentials.Certificate(firebase_key_dict)
 firebase_admin.initialize_app(cred)
 
@@ -45,7 +48,6 @@ def register_token():
 
     return jsonify({"message": "Token registrado correctamente"}), 200
 
-
 @app.route('/sync-pagos', methods=['POST'])
 def sync_pagos():
     data = request.json
@@ -59,7 +61,6 @@ def sync_pagos():
         usuarios_pagos[token] = pagos
 
     return jsonify({"message": "Pagos sincronizados correctamente"}), 200
-
 
 @app.route('/test-notification', methods=['POST'])
 def test_notification():
@@ -78,7 +79,6 @@ def test_notification():
     else:
         return jsonify({"error": "Error enviando notificación de prueba"}), 500
 
-
 def enviar_notificacion(token, titulo, cuerpo):
     message = messaging.Message(
         notification=messaging.Notification(title=titulo, body=cuerpo),
@@ -91,12 +91,11 @@ def enviar_notificacion(token, titulo, cuerpo):
         app.logger.error(f"Error enviando a {token}: {e}")
         return False
 
-
 def revisar_y_notificar():
     app.logger.info("Ejecutando tarea periódica de revisión de pagos...")
     ahora = datetime.now()
     rango_fin = ahora + timedelta(days=30)
-    inicio_mes_anterior = (ahora.replace(day=1) - timedelta(days=1)).replace(day=1) 
+    inicio_mes_anterior = (ahora.replace(day=1) - timedelta(days=1)).replace(day=1)
     tokens_a_borrar = set()
 
     with pagos_lock:
@@ -147,10 +146,9 @@ def revisar_y_notificar():
                 usuarios_pagos.pop(t, None)
                 app.logger.info(f"Token inválido eliminado: {t}")
 
-
 scheduler = BackgroundScheduler()
-scheduler.add_job(revisar_y_notificar, "interval", minutes=1)  
+scheduler.add_job(revisar_y_notificar, "interval", minutes=720)  # cada 12 horas
 scheduler.start()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

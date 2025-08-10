@@ -7,16 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node modules y builds frontend (si usas)
 node_modules
 dist
 dist-ssr
 *.local
 
-#variables de entorno
+# Variables de entorno y secretos
 .env
-firebase-key.json
+firebase-key.json     # Si tienes este archivo local, mejor ignorarlo
+venv                  # Entorno virtual de Python
 
-# Editor directories and files
+# IDE y OS
 .vscode/*
 !.vscode/extensions.json
 .idea
