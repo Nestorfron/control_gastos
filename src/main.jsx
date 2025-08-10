@@ -11,19 +11,6 @@ import { db } from "../src/database/db";
 const API_URL = import.meta.env.VITE_API_URL;
 console.log("API_URL:", API_URL);
 
-// Registro explícito del service worker para Firebase Messaging
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/firebase-messaging-sw.js')
-    .then(registration => {
-      console.log('✅ Service Worker registrado:', registration);
-    })
-    .catch(error => {
-      console.error('❌ Error registrando Service Worker:', error);
-    });
-} else {
-  console.warn('Service Worker no soportado en este navegador');
-}
-
 const updateSW = registerSW({
   onNeedRefresh() {
     console.log("Nueva versión disponible, preguntando usuario...");
@@ -144,7 +131,7 @@ requestPermission()
 
       await checkAndSyncPagos(token);
 
-      setInterval(() => checkAndSyncPagos(token), 60 * 1000);
+      setInterval(() => checkAndSyncPagos(token), 30 * 1000);
     } else {
       console.warn("No se recibió token FCM");
     }
@@ -161,7 +148,7 @@ onMessageListener()
     } else {
       new Notification(payload.notification.title, {
         body: payload.notification.body,
-        icon: "/icon-192x192.png",
+        icon: "/icon-192.png",
       });
     }
   })
