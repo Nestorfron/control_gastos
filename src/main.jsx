@@ -140,6 +140,7 @@ requestPermission()
     console.error("Error solicitando permiso:", error);
   });
 
+console.log("Listener configurado para recibir notificaciones");
 onMessageListener()
   .then((payload) => {
     console.log("Notificación recibida en frontend:", payload);
@@ -148,7 +149,7 @@ onMessageListener()
     } else {
       new Notification(payload.notification.title, {
         body: payload.notification.body,
-        icon: "/icon-192.png",
+        icon: "/icon-192x192.png",
       });
     }
   })
