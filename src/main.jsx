@@ -144,7 +144,7 @@ requestPermission()
 
       await checkAndSyncPagos(token);
 
-      setInterval(() => checkAndSyncPagos(token), 30 * 1000);
+      setInterval(() => checkAndSyncPagos(token), 60 * 1000);
     } else {
       console.warn("No se recibió token FCM");
     }
