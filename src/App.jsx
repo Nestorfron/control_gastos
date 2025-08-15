@@ -5,6 +5,9 @@ import { Home, Plus } from "lucide-react";
 import FormularioPendiente from "../src/componentes/FormularioPendientes";
 import ListaPendientes from "../src/componentes/ListaPendientes";
 import MenuAcciones from "../src/componentes/MenuAcciones";
+import TotalesCards from "../src/componentes/TotalesCars";
+
+import Logo from "../src/assets/icon-192.png";
 
 export default function App() {
   const [mesActual, setMesActual] = useState(dayjs().format("YYYY-MM"));
@@ -241,12 +244,21 @@ export default function App() {
     .reduce((a, b) => a + b, 0);
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-6 text-emerald-600 mt-2">
-        📋 Gastos - Pendientes
-      </h1>
+    <div className="bg-white">
+      <div className="max-w-3xl mx-auto p-6">
+        <div className="flex flex-col items-center gap-3 mb-6">
+          <img
+            src={Logo}
+            alt="Logo"
+            className="w-24 h-24 rounded-full m-auto"
+          />
+          <h1 className="text-4xl font-extrabold text-emerald-600 flex items-center gap-2 text-center">
+            Gastos - Pendientes
+          </h1>
+        </div>
+      </div>
 
-      <div className="flex items-end justify-end mb-6 space-x-2">
+      <div className="flex items-end justify-end mb-6 space-x-2 mr-2">
         <MenuAcciones
           onExportarJSON={exportarJSON}
           onImportarJSON={importarJSON}
@@ -295,26 +307,12 @@ export default function App() {
         />
       )}
 
-      <div className="flex w-full mb-6 text-gray-700">
-        <div className="flex m-auto items-center border shadow-md rounded-md p-2 bg-gray-500 text-white">
-          <p className="mr-2">
-            <strong>Pagados:</strong> {pagados}
-          </p>
-          <p><strong>/</strong></p>
-          <p className="ml-2">
-            <strong>Pendientes:</strong> {noPagados}
-          </p>
-        </div>
-        <div className="flex m-auto items-center border shadow-md rounded-md p-2 bg-gray-500 text-white">
-          <p className="mr-2">
-            <strong>Total Pesos:</strong> $ {totalPesos}
-          </p>
-          <p><strong>/</strong></p>
-          <p className="ml-2">
-            <strong>Total Dolares:</strong> $ {totalDolares}
-          </p>
-        </div>
-      </div>
+      <TotalesCards
+        pagados={pagados}
+        noPagados={noPagados}
+        totalPesos={totalPesos}
+        totalDolares={totalDolares}
+      />
 
       <ListaPendientes
         pendientes={listaMes.pendientes}
@@ -339,7 +337,7 @@ export default function App() {
         onEditar={guardarPendienteInline}
       />
       <footer>
-        <p className="text-center text-gray-500 mt-2">
+        <p className="text-center text-gray-500 mt-3">
           Creado por{" "}
           <a
             href="https://www.linkedin.com/in/nestor-frones/"

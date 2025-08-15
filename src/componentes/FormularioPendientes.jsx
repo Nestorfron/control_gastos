@@ -43,7 +43,7 @@ export default function FormularioPendiente({ onAgregar, pendienteEditar, onCanc
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 flex flex-col sm:flex-row gap-3">
+    <form onSubmit={handleSubmit} className="mb-6 flex flex-col sm:flex-row gap-3 m-2">
       <input
         type="text"
         placeholder="Descripción"
@@ -79,7 +79,7 @@ export default function FormularioPendiente({ onAgregar, pendienteEditar, onCanc
         >
           {pendienteEditar ? "Guardar cambios" : "Agregar"}
         </button>
-        {pendienteEditar && (
+     
           <button
             type="button"
             onClick={onCancelarEdicion}
@@ -87,7 +87,7 @@ export default function FormularioPendiente({ onAgregar, pendienteEditar, onCanc
           >
             Cancelar
           </button>
-        )}
+
       </div>
     </form>
   );
