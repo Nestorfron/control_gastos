@@ -5,6 +5,9 @@ import { Home, Plus } from "lucide-react";
 import FormularioPendiente from "../src/componentes/FormularioPendientes";
 import ListaPendientes from "../src/componentes/ListaPendientes";
 import MenuAcciones from "../src/componentes/MenuAcciones";
+import TotalesCards from "../src/componentes/TotalesCars";
+
+import Logo from "../src/assets/icon-192.png";
 
 export default function App() {
   const [mesActual, setMesActual] = useState(dayjs().format("YYYY-MM"));
@@ -14,13 +17,12 @@ export default function App() {
   const [listaMes, setListaMes] = useState(null);
   const [copiando, setCopiando] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [pendienteEditar, setPendienteEditar] = useState(null); 
+  const [pendienteEditar, setPendienteEditar] = useState(null);
 
   const pendientesLista = [];
 
   useEffect(() => {
     cargarListaMes(mesActual);
-
   }, [mesActual]);
 
   const cargarListaMes = async (mes) => {
@@ -41,13 +43,11 @@ export default function App() {
     setMesActual(e.target.value);
   };
 
-  
   const cancelarEdicion = () => {
     setPendienteEditar(null);
     setMostrarFormulario(false);
   };
 
-  
   const guardarPendienteNuevo = async (pendiente) => {
     const nuevaLista = {
       ...listaMes,
@@ -64,7 +64,6 @@ export default function App() {
     setMostrarFormulario(false);
   };
 
-  
   const guardarPendienteInline = async (id, datosPendiente) => {
     const nuevaLista = {
       ...listaMes,
@@ -75,7 +74,6 @@ export default function App() {
     await guardarLista(nuevaLista);
   };
 
-  
   const exportarJSON = () => {
     if (!listaMes) return;
     const data = JSON.stringify(listaMes, null, 2);
@@ -88,7 +86,6 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  
   const importarJSON = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -96,7 +93,10 @@ export default function App() {
     reader.onload = async (evt) => {
       try {
         const datosImportados = JSON.parse(evt.target.result);
-        if (!datosImportados.mes || !Array.isArray(datosImportados.pendientes)) {
+        if (
+          !datosImportados.mes ||
+          !Array.isArray(datosImportados.pendientes)
+        ) {
           alert("Archivo inválido");
           return;
         }
@@ -110,7 +110,6 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  
   const exportarTodo = async () => {
     const todasLasListas = await db.listasMensuales.toArray();
     const data = JSON.stringify(todasLasListas, null, 2);
@@ -123,7 +122,6 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  
   const importarTodo = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -146,7 +144,6 @@ export default function App() {
     reader.readAsText(file);
   };
 
-  
   const copiarPendientes = async () => {
     if (mesDestino === mesActual) {
       alert("El mes destino debe ser diferente al mes actual");
@@ -155,8 +152,14 @@ export default function App() {
 
     setCopiando(true);
     try {
-      const origen = await db.listasMensuales.where("mes").equals(mesActual).first();
-      let destino = await db.listasMensuales.where("mes").equals(mesDestino).first();
+      const origen = await db.listasMensuales
+        .where("mes")
+        .equals(mesActual)
+        .first();
+      let destino = await db.listasMensuales
+        .where("mes")
+        .equals(mesDestino)
+        .first();
 
       if (!origen || !origen.pendientes.length) {
         alert("El mes origen no tiene pendientes para copiar.");
@@ -193,7 +196,9 @@ export default function App() {
       });
 
       if (pendientesNuevos.length === 0) {
-        alert("No hay pendientes nuevos para copiar. Ya fueron copiados anteriormente.");
+        alert(
+          "No hay pendientes nuevos para copiar. Ya fueron copiados anteriormente."
+        );
         setCopiando(false);
         return;
       }
@@ -226,19 +231,34 @@ export default function App() {
   };
 
   if (!listaMes) return <p>Cargando...</p>;
-  
 
   const totalPendientes = listaMes.pendientes.length;
   const pagados = listaMes.pendientes.filter((p) => p.pagado).length;
   const noPagados = totalPendientes - pagados;
 
-  return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-6 text-emerald-600 mt-2">
-        📋 Gastos - Pendientes
-      </h1>
+  const totalPesos = listaMes.pendientes
+    .map((p) => p.montoPesos)
+    .reduce((a, b) => a + b, 0);
+  const totalDolares = listaMes.pendientes
+    .map((p) => p.montoDolares)
+    .reduce((a, b) => a + b, 0);
 
-      <div className="flex items-end justify-end mb-6 space-x-2">
+  return (
+    <div className="bg-white">
+      <div className="max-w-3xl mx-auto p-6">
+        <div className="flex flex-col items-center gap-3 mb-6">
+          <img
+            src={Logo}
+            alt="Logo"
+            className="w-24 h-24 rounded-full m-auto"
+          />
+          <h1 className="text-4xl font-extrabold text-emerald-600 flex items-center gap-2 text-center">
+            Gastos - Pendientes
+          </h1>
+        </div>
+      </div>
+
+      <div className="flex items-end justify-end mb-6 space-x-2 mr-2">
         <MenuAcciones
           onExportarJSON={exportarJSON}
           onImportarJSON={importarJSON}
@@ -287,14 +307,12 @@ export default function App() {
         />
       )}
 
-      <div className="mb-6 text-center text-gray-700">
-        <p>
-          <strong>Pagados:</strong> {pagados}
-        </p>
-        <p>
-          <strong>Pendientes:</strong> {noPagados}
-        </p>
-      </div>
+      <TotalesCards
+        pagados={pagados}
+        noPagados={noPagados}
+        totalPesos={totalPesos}
+        totalDolares={totalDolares}
+      />
 
       <ListaPendientes
         pendientes={listaMes.pendientes}
@@ -313,15 +331,23 @@ export default function App() {
             pendientes: listaMes.pendientes.filter((p) => p.id !== id),
           };
           await guardarLista(nuevaLista);
-          
+
           if (pendienteEditar?.id === id) cancelarEdicion();
         }}
-        onEditar={guardarPendienteInline} 
+        onEditar={guardarPendienteInline}
       />
       <footer>
-        <p className="text-center text-gray-500 mt-2">Creado por <a href="https://www.linkedin.com/in/nestor-frones/" target="_blank" rel="noreferrer">Nestor FRONES 👋</a></p>
+        <p className="text-center text-gray-500 mt-3">
+          Creado por{" "}
+          <a
+            href="https://www.linkedin.com/in/nestor-frones/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Nestor FRONES 👋
+          </a>
+        </p>
       </footer>
     </div>
-    
   );
 }

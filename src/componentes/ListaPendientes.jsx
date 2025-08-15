@@ -54,67 +54,83 @@ export default function ListaPendientes({
   };
 
   return (
-    <ul className="space-y-3">
-      {pendientes.length === 0 && (
-        <li className="text-center text-gray-500">No hay pendientes.</li>
+    <ul className="space-y-4 p-4">
+  {pendientes.length === 0 && (
+    <li className="text-center text-gray-500 italic">No hay pendientes.</li>
+  )}
+
+  {pendientes.map((item) => (
+    <li
+      key={item.id}
+      className={`flex items-center justify-between p-4 rounded-xl shadow-md border transition-all ${
+        item.pagado
+          ? "bg-gray-100 text-gray-400 line-through"
+          : "bg-white hover:shadow-lg"
+      }`}
+    >
+      {/* Izquierda */}
+      <div className="flex items-start gap-4 flex-1">
+        <input
+          type="checkbox"
+          checked={item.pagado}
+          onChange={() => onTogglePagado(item.id)}
+          className="mt-1 h-5 w-5 accent-green-500 cursor-pointer"
+        />
+
+        {idEditando === item.id ? (
+          <FormularioPendienteInline
+            form={formEdit}
+            setForm={setFormEdit}
+            onCancelar={() => setIdEditando(null)}
+            onGuardar={guardarEdicion}
+          />
+        ) : (
+          <div>
+            <p className="font-semibold text-lg">{item.descripcion}</p>
+
+            <div className="flex items-center gap-3 mt-1 text-sm">
+              {item.montoPesos != null && (
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                  ${item.montoPesos} UYU
+                </span>
+              )}
+              {item.montoDolares != null && (
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                  ${item.montoDolares} USD
+                </span>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-500 mt-1">
+              📅 {item.fecha}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Botones */}
+      {idEditando !== item.id && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIdEditando(item.id)}
+            className="p-2 text-gray-500 hover:text-yellow-500 rounded-full hover:bg-yellow-50 transition"
+            title="Editar"
+          >
+            <Edit2 className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={() => onBorrar(item.id)}
+            className="p-2 text-gray-500 hover:text-red-500 rounded-full hover:bg-red-50 transition"
+            title="Borrar"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
       )}
+    </li>
+  ))}
+</ul>
 
-      {pendientes.map((item) => (
-        <li
-          key={item.id}
-          className={`flex items-center justify-between p-3 border rounded shadow-sm ${
-            item.pagado ? "bg-gray-200 text-gray-500 line-through" : ""
-          }`}
-        >
-          <div className="flex items-center gap-3 flex-1">
-            <input
-              type="checkbox"
-              checked={item.pagado}
-              onChange={() => onTogglePagado(item.id)}
-            />
-
-            {idEditando === item.id ? (
-              <FormularioPendienteInline
-                form={formEdit}
-                setForm={setFormEdit}
-                onCancelar={() => setIdEditando(null)}
-                onGuardar={guardarEdicion}
-              />
-            ) : (
-              <div>
-                <p className="font-semibold">{item.descripcion}</p>
-                <p>
-                  {item.montoPesos != null && <>${item.montoPesos} UYU</>}
-                  {item.montoDolares != null && <> / ${item.montoDolares} USD</>}
-                </p>
-                <p className="text-sm text-gray-600">Fecha: {item.fecha}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-2">
-            {idEditando === item.id ? null : (
-              <>
-                <button
-                  onClick={() => setIdEditando(item.id)}
-                  className="px-2 py-1 text-gray-600 hover:text-yellow-600 rounded"
-                  title="Editar"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={() => onBorrar(item.id)}
-                  className="px-2 py-1 text-gray-600 hover:text-red-600 rounded"
-                  title="Borrar"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </>
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
   );
 }
